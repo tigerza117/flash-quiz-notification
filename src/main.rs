@@ -59,7 +59,6 @@ fn notification() {
 
     let mut map = HashMap::new();
     map.insert("message", "IT LAW NEW Flash Quiz!!!\nLet do it now!");
-    map.insert("body", "json");
 
     client.post("https://notify-api.line.me/api/notify")
         .form(&map)
