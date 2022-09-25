@@ -12,7 +12,6 @@ lazy_static! {
 
 static INTERVAL_TIME: u64 = 30;
 
-
 fn main() {
     dotenv().ok();
 
@@ -37,7 +36,7 @@ fn main() {
         if is_timeout(&document) {
             log::warn!("Timeout!!!");
             login(&client);
-            sleep(std::time::Duration::from_secs(INTERVAL_TIME/3));
+            sleep(std::time::Duration::from_secs(INTERVAL_TIME / 3));
             continue;
         }
 
@@ -130,7 +129,7 @@ fn notification() {
         );
 
         let mut map = HashMap::new();
-        map.insert("message", "New Flash Quiz!!!\nLet do it now!");
+        map.insert("message", "New Flash Quiz!!!\nLet's do it now!");
 
         client.post("https://notify-api.line.me/api/notify")
             .form(&map)
