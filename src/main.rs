@@ -65,5 +65,5 @@ fn notification() {
         .headers(headers)
         .send().unwrap();
 
-    println!("Notification sent! {}", TOKEN);
+    println!("Notification sent!");
 }
