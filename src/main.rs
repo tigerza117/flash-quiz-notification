@@ -37,7 +37,7 @@ fn main() {
         if is_timeout(&document) {
             log::warn!("Timeout!!!");
             login(&client);
-            sleep(std::time::Duration::from_secs(INTERVAL_TIME));
+            sleep(std::time::Duration::from_secs(INTERVAL_TIME/3));
             continue;
         }
 
