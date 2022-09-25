@@ -4,10 +4,15 @@ use std::thread::sleep;
 
 use dotenv::dotenv;
 use lazy_static::lazy_static;
-use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, HeaderMap, HeaderValue};
+use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 
 lazy_static! {
-    static ref TOKENS:  Vec<String> = env::var("LINE_TOKEN").unwrap().as_str().split("||").map(|x| ["Bearer", x].join(" ")).collect::<Vec<String>>();
+    static ref TOKENS: Vec<String> = env::var("LINE_TOKEN")
+        .unwrap()
+        .as_str()
+        .split("||")
+        .map(|x| ["Bearer", x].join(" "))
+        .collect::<Vec<String>>();
 }
 
 static INTERVAL_TIME: u64 = 30;
@@ -25,37 +30,40 @@ fn main() {
     let mut count = 0;
 
     loop {
-        let response = client.get("https://onlearn.it.kmitl.ac.th/mod/forum/view.php?id=12867")
-            .send()
-            .unwrap()
-            .text()
-            .unwrap();
+        let response = client
+            .get("https://onlearn.it.kmitl.ac.th/mod/forum/view.php?id=12867")
+            .send();
 
-        let document = scraper::Html::parse_document(&response);
+        match response {
+            Ok(res) => {
+                let document = scraper::Html::parse_document(&res.text().unwrap());
 
-        if is_timeout(&document) {
-            log::warn!("Timeout!!!");
-            login(&client);
-            sleep(std::time::Duration::from_secs(INTERVAL_TIME / 3));
-            continue;
-        }
+                if is_timeout(&document) {
+                    log::warn!("Timeout!!!");
+                    login(&client);
+                    sleep(std::time::Duration::from_secs(INTERVAL_TIME / 3));
+                    continue;
+                }
 
                 let title_selector =
                     scraper::Selector::parse("table[class='table discussion-list'] > tbody > tr")
                         .unwrap();
 
-        let i = document.select(&title_selector).count();
+                let i = document.select(&title_selector).count();
 
-        log::debug!("Count got {}!", i);
+                log::debug!("Count got {}!", i);
 
-        if count == 0 {
-            count = i;
-        } else {
-            if count > i && count != i {
-                log::info!("New post!");
-                count = i;
-                notification();
+                if count == 0 {
+                    count = i;
+                } else {
+                    if count < i && count != i {
+                        log::info!("New post!");
+                        count = i;
+                        notification();
+                    }
+                }
             }
+            Err(e) => log::error!("{}", e),
         }
 
         sleep(std::time::Duration::from_secs(INTERVAL_TIME));
@@ -63,7 +71,9 @@ fn main() {
 }
 
 fn is_timeout(document: &scraper::Html) -> bool {
-    let login_selector = scraper::Selector::parse("a[href='https://onlearn.it.kmitl.ac.th/login/index.php']").unwrap();
+    let login_selector =
+        scraper::Selector::parse("a[href='https://onlearn.it.kmitl.ac.th/login/index.php']")
+            .unwrap();
 
     let i = document.select(&login_selector).count();
 
@@ -86,58 +96,71 @@ fn login(client: &reqwest::blocking::Client) {
     map.insert("password", password.as_str());
 
     let mut headers = HeaderMap::new();
-    headers.insert(CONTENT_TYPE, HeaderValue::from_str("application/x-www-form-urlencoded")
-        .unwrap(),
+    headers.insert(
+        CONTENT_TYPE,
+        HeaderValue::from_str("application/x-www-form-urlencoded").unwrap(),
     );
 
-    client.post("https://onlearn.it.kmitl.ac.th/login/index.php")
+    let response = client
+        .post("https://onlearn.it.kmitl.ac.th/login/index.php")
         .form(&map)
         .headers(headers)
-        .send()
-        .unwrap();
+        .send();
+
+    match response {
+        Ok(_) => log::info!("Login success"),
+        Err(e) => log::error!("{}", e),
+    }
 }
 
 fn get_login_token(client: &reqwest::blocking::Client) -> String {
-    let response = client.get("https://onlearn.it.kmitl.ac.th/login/index.php")
-        .send()
-        .unwrap()
-        .text()
-        .unwrap();
+    let response = client
+        .get("https://onlearn.it.kmitl.ac.th/login/index.php")
+        .send();
 
-    let document = scraper::Html::parse_document(&response);
+    match response {
+        Ok(res) => {
+            let document = scraper::Html::parse_document(&res.text().unwrap());
 
-    let login_token_selector = scraper::Selector::parse("#login > input[name='logintoken']").unwrap();
+            let login_token_selector =
+                scraper::Selector::parse("#login > input[name='logintoken']").unwrap();
 
-    let mut selects = document.select(&login_token_selector);
+            let mut selects = document.select(&login_token_selector);
 
-    let token = selects.next().unwrap().value().attr("value").unwrap();
+            let token = selects.next().unwrap().value().attr("value").unwrap();
 
-    return String::from(token);
+            return String::from(token);
+        }
+        Err(e) => log::error!("{}", e),
+    }
+
+    return String::from("");
 }
 
 fn notification() {
-    let client = reqwest::blocking::Client::builder()
-        .build()
-        .unwrap();
+    let client = reqwest::blocking::Client::builder().build().unwrap();
 
     for token in TOKENS.iter() {
         let mut headers = HeaderMap::new();
-        headers.insert(CONTENT_TYPE, HeaderValue::from_str("application/x-www-form-urlencoded")
-            .unwrap(),
+        headers.insert(
+            CONTENT_TYPE,
+            HeaderValue::from_str("application/x-www-form-urlencoded").unwrap(),
         );
-        headers.insert(AUTHORIZATION, HeaderValue::from_str(token)
-            .unwrap(),
-        );
+        headers.insert(AUTHORIZATION, HeaderValue::from_str(token).unwrap());
 
         let mut map = HashMap::new();
         map.insert("message", "New Flash Quiz!!!\nLet's do it now!");
 
-        client.post("https://notify-api.line.me/api/notify")
+        let response = client
+            .post("https://notify-api.line.me/api/notify")
             .form(&map)
             .headers(headers)
-            .send()
-            .unwrap();
+            .send();
+
+        match response {
+            Ok(_) => {}
+            Err(e) => log::error!("{}", e),
+        }
     }
     log::info!("Notification sent!!!");
 }
-
