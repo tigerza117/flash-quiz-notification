@@ -30,6 +30,8 @@ fn main() {
 
         let i = document.select(&title_selector).count();
 
+        println!("Count got {}!", i);
+
         if count == 0 {
             count = i;
         } else {
