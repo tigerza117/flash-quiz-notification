@@ -40,8 +40,9 @@ fn main() {
             continue;
         }
 
-        let title_selector = scraper::Selector::parse("div[data-name='Flash Quiz (Total 5 Pts.)'] > table > tbody > tr")
-            .unwrap();
+                let title_selector =
+                    scraper::Selector::parse("table[class='table discussion-list'] > tbody > tr")
+                        .unwrap();
 
         let i = document.select(&title_selector).count();
 
