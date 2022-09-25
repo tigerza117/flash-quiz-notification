@@ -35,7 +35,7 @@ fn main() {
         if count == 0 {
             count = i;
         } else {
-            if count != i {
+            if count > i && count != i {
                 println!("New post!");
                 count = i;
                 notification();
