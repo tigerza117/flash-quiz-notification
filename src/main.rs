@@ -52,7 +52,7 @@ fn notification() {
         .unwrap();
 
     let mut headers = HeaderMap::new();
-    headers.insert(CONTENT_TYPE, HeaderValue::from_str("	application/x-www-form-urlencoded")
+    headers.insert(CONTENT_TYPE, HeaderValue::from_str("application/x-www-form-urlencoded")
         .unwrap());
     headers.insert(AUTHORIZATION, HeaderValue::from_str(TOKEN)
         .unwrap());
