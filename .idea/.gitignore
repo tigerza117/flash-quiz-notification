@@ -1,0 +1,10 @@
+# Default ignored files
+/../../flash-quiz-notification /.idea/shelf/
+/../../flash-quiz-notification /.idea/workspace.xml
+# Editor-based HTTP Client requests
+/../../flash-quiz-notification /.idea/httpRequests/
+# Datasource local storage ignored files
+/../../flash-quiz-notification /.idea/dataSources/
+/../../flash-quiz-notification /.idea/dataSources.local.xml
+# CodeStream ignored files
+/../../flash-quiz-notification \.idea/codestream.xml
