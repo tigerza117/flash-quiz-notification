@@ -58,7 +58,7 @@ fn notification() {
         .unwrap());
 
     let mut map = HashMap::new();
-    map.insert("message", "IT LAW NEW Flash Quiz!!!\n Let do it now!");
+    map.insert("message", "IT LAW NEW Flash Quiz!!!\nLet do it now!");
     map.insert("body", "json");
 
     client.post("https://notify-api.line.me/api/notify")
